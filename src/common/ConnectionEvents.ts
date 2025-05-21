@@ -11,8 +11,8 @@ export class ServiceEvent extends PlatformEvent {
     private privJsonResult: string;
 
     public constructor(eventName: string, jsonstring: string, eventType: EventType = EventType.Info) {
-      super(eventName, eventType);
-      this.privJsonResult = jsonstring;
+        super(eventName, eventType);
+        this.privJsonResult = jsonstring;
     }
 
     public get jsonString(): string {
@@ -22,14 +22,24 @@ export class ServiceEvent extends PlatformEvent {
 
 export class ConnectionEvent extends PlatformEvent {
     private privConnectionId: string;
+    private readonly privTimestamp: string;
 
     public constructor(eventName: string, connectionId: string, eventType: EventType = EventType.Info) {
         super(eventName, eventType);
         this.privConnectionId = connectionId;
+        this.privTimestamp = new Date().toISOString();
     }
 
     public get connectionId(): string {
         return this.privConnectionId;
+    }
+
+    public get timestamp(): string {
+        return this.privTimestamp;
+    }
+
+    public logEvent(): void {
+        console.log(`[${this.timestamp}] ${this.constructor.name}: ${this.eventId} (Connection ID: ${this.connectionId})`);
     }
 }
 
@@ -40,7 +50,8 @@ export class ConnectionStartEvent extends ConnectionEvent {
     public constructor(connectionId: string, uri: string, headers?: IStringDictionary<string>) {
         super("ConnectionStartEvent", connectionId);
         this.privUri = uri;
-        this.privHeaders = headers;
+        this.privHeaders = headers || {};
+        this.logEvent();
     }
 
     public get uri(): string {
@@ -55,6 +66,7 @@ export class ConnectionStartEvent extends ConnectionEvent {
 export class ConnectionEstablishedEvent extends ConnectionEvent {
     public constructor(connectionId: string) {
         super("ConnectionEstablishedEvent", connectionId);
+        this.logEvent();
     }
 }
 
@@ -66,6 +78,7 @@ export class ConnectionClosedEvent extends ConnectionEvent {
         super("ConnectionClosedEvent", connectionId, EventType.Debug);
         this.privReason = reason;
         this.privStatusCode = statusCode;
+        this.logEvent();
     }
 
     public get reason(): string {
@@ -85,6 +98,7 @@ export class ConnectionErrorEvent extends ConnectionEvent {
         super("ConnectionErrorEvent", connectionId, EventType.Debug);
         this.privMessage = message;
         this.privType = type;
+        this.logEvent();
     }
 
     public get message(): string {
@@ -104,6 +118,7 @@ export class ConnectionEstablishErrorEvent extends ConnectionEvent {
         super("ConnectionEstablishErrorEvent", connectionId, EventType.Error);
         this.privStatusCode = statuscode;
         this.privReason = reason;
+        this.logEvent();
     }
 
     public get reason(): string {
@@ -123,6 +138,7 @@ export class ConnectionMessageReceivedEvent extends ConnectionEvent {
         super("ConnectionMessageReceivedEvent", connectionId);
         this.privNetworkReceivedTime = networkReceivedTimeISO;
         this.privMessage = message;
+        this.logEvent();
     }
 
     public get networkReceivedTime(): string {
@@ -142,6 +158,7 @@ export class ConnectionMessageSentEvent extends ConnectionEvent {
         super("ConnectionMessageSentEvent", connectionId);
         this.privNetworkSentTime = networkSentTimeISO;
         this.privMessage = message;
+        this.logEvent();
     }
 
     public get networkSentTime(): string {
@@ -163,6 +180,7 @@ export class ConnectionRedirectEvent extends ConnectionEvent {
         this.privRedirectUrl = redirectUrl;
         this.privOriginalUrl = originalUrl;
         this.privContext = context;
+        this.logEvent();
     }
 
     public get redirectUrl(): string {
